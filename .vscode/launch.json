@@ -3,11 +3,13 @@
   "configurations": [
     {
       "name": "C/C++ Runner: Debug Session",
-      "type": "lldb",
+      "type": "cppvsdbg",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/muhammadabdullah/Desktop/Desktop - Muhammad’s MacBook Pro/UofT Academic 2023-2024/winter courses/ece243/Final_project/ECE243_Flappy_Bird_C",
-      "program": "/Users/muhammadabdullah/Desktop/Desktop - Muhammad’s MacBook Pro/UofT Academic 2023-2024/winter courses/ece243/Final_project/ECE243_Flappy_Bird_C/build/Debug/outDebug"
+      "stopAtEntry": false,
+      "console": "externalTerminal",
+      "cwd": "c:/Users/muhfa/ece243/ECE243_Flappy_Bird_C",
+      "program": "c:/Users/muhfa/ece243/ECE243_Flappy_Bird_C/build/Debug/outDebug"
     }
   ]
 }
