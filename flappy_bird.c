@@ -614,6 +614,9 @@ int main(void)
     }
 }
 
+
+///////////////////////// Muhammad Irfan ////////////////////////////
+
 void draw_string(int x, int y, char str[])
 {
     for (int i = 0; i < strlen(str); i++)
@@ -710,3 +713,7 @@ void plot_pixel(int x, int y, short int line_color)
     // Plot the pixel
     *(volatile short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
 }
+
+
+///////////////////////// Muhammad Abdullah ////////////////////////////
+
