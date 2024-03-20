@@ -48040,6 +48040,7 @@ char lower_pipe[] = {
                          // If the number of input bytes exceeds this value, the extra
                          // bytes are discarded.
                          // Input functions.
+
 void mostRecentKeyboardInputs(volatile int *ps2_ctrl_ptr, unsigned char readBytes[]);
 // void updateCursorMovementDirection(Cursor *screenCursorPtr, unsigned char readBytes[]);
 
@@ -48059,15 +48060,32 @@ int level(int totalPipe, int *speed);
 void GameOver();
 int score(bird flappy, int *curScore, const int num_pipe, pipe *pipes);
 int proto_Score(int *curScore);
+void clear_all_text();
+void startGame(unsigned char readBytes[]);
+void initializeGame(unsigned char readBytes[]);
+void displayScore();
+void displayHighScore(unsigned char readBytes[]);
+void pauseGame(unsigned char readBytes[]);
 
 /// Muhammad Abdullah ///
 void draw_bird();    // Draw the bird
 void control_bird(); // Control the bird using ps2 keyboard
 bool hitPipe();      // Check if pipes
 void audio_bg();     // Audio for the background
-void startGame();    // Start the game controller using ps2 keyboard
 
 #define MAX_PIPES 4
+#define HEX4_5 ((volatile long *)0xFF200030)
+
+const int hexdisplay[10] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x67};
+
+int delayX = 0;
+int num_of_pipe = 1;
+int currentScore = 0;
+int speed = 3;
+int highestScore = 0;
+
+bool GameStarted = false;
+bool GamePaused = false;
 
 int main(void)
 {
@@ -48079,12 +48097,6 @@ int main(void)
     unsigned char readBytes[PS2INPUTBYTES];
 
     mostRecentKeyboardInputs(ps2_ctrl_ptr, readBytes);
-
-    int delayX = 0;
-    int num_of_pipe = 1;
-    int currentScore = 0;
-    // int total_pipe = 0;
-    int speed = 3;
 
     pipes[0] = random_init();
 
@@ -48102,56 +48114,139 @@ int main(void)
     *(pixel_ctrl_ptr + 1) = (int)&Buffer2;
     pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
 
+    draw_string(30, 30, "Start the game");
+
     while (1)
     {
-        draw_image();
-        proto_Score(&currentScore);
-        clear_screen();
-        level(num_of_pipe, &speed);
+        mostRecentKeyboardInputs(ps2_ctrl_ptr, readBytes);
 
-        // Update the game state
-        for (int i = 0; i < num_of_pipe; ++i)
+        initializeGame(readBytes);
+
+        pauseGame(readBytes);
+
+        if (GameStarted && !GamePaused)
         {
-            pipes[i].x -= speed; // Move the pipe left
-            // Check if the pipe is off the screen
-            if (pipes[i].x < -pipe_width)
+            clear_all_text();
+            draw_image();
+            proto_Score(&currentScore);
+            clear_screen();
+            level(num_of_pipe, &speed);
+
+            // Update the game state
+            for (int i = 0; i < num_of_pipe; ++i)
             {
-                if (num_of_pipe >= MAX_PIPES)
+                pipes[i].x -= speed; // Move the pipe left
+                // Check if the pipe is off the screen
+                if (pipes[i].x < -pipe_width)
                 {
-                    pipes[i] = random_init();
-                    pipes[i].x = 320; // Move the reused pipe to the right
+                    if (num_of_pipe >= MAX_PIPES)
+                    {
+                        pipes[i] = random_init();
+                        pipes[i].x = 320; // Move the reused pipe to the right
+                    }
                 }
             }
-        }
 
-        // Draw the game state
-        for (int i = 0; i < num_of_pipe; ++i)
-        {
-            draw_pipe(pipes[i]);
-        }
-
-        // Add new pipes if necessary
-        if (delayX >= 30)
-        {
-            if (num_of_pipe < MAX_PIPES)
+            // Draw the game state
+            for (int i = 0; i < num_of_pipe; ++i)
             {
-                num_of_pipe++;
-                pipes[num_of_pipe - 1] = random_init();
-                currentScore += 1;
+                draw_pipe(pipes[i]);
             }
-            delayX = 0; // Reset the delay counter regardless of whether a new pipe was added or not
-        }
-        else
-        {
-            delayX++; // Increment the delay counter
-        }
 
-        wait_for_vsync();                           // swap front and back buffers on VGA vertical sync
-        pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
+            // Add new pipes if necessary
+            if (delayX >= 30)
+            {
+                if (num_of_pipe < MAX_PIPES)
+                {
+                    num_of_pipe++;
+                    pipes[num_of_pipe - 1] = random_init();
+                    currentScore += 1;
+                }
+                delayX = 0; // Reset the delay counter regardless of whether a new pipe was added or not
+            }
+            else
+            {
+                delayX++; // Increment the delay counter
+            }
+
+            wait_for_vsync();                           // swap front and back buffers on VGA vertical sync
+            pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
+        }
     }
 }
 
 ///////////////////////// Muhammad Irfan ////////////////////////////
+
+void pauseGame(unsigned char readBytes[])
+{
+    for (int i = 0; i < PS2INPUTBYTES; i++)
+    {
+        if (readBytes[i] == 0x4D)
+        {
+            GamePaused = true;
+        }
+    }
+}
+
+void displayHighScore(unsigned char readBytes[])
+{
+    for (int i = 0; i < PS2INPUTBYTES; i++)
+    {
+        if (readBytes[i] == 0x23)
+        {
+            if (highestScore < currentScore)
+            {
+                highestScore = currentScore;
+            }
+
+            int tens = highestScore / 10;
+            int ones = highestScore % 10;
+
+            int displayHighScore = (hexdisplay[tens] << 8) | hexdisplay[ones];
+
+            *(HEX4_5) = displayHighScore;
+        }
+    }
+}
+
+void displayScore()
+{
+    int tens = currentScore / 10;
+    int ones = currentScore % 10;
+
+    int displayHighScore = (hexdisplay[tens] << 8) | hexdisplay[ones];
+
+    *(HEX4_5) = displayHighScore;
+}
+
+void initializeGame(unsigned char readBytes[])
+{
+    for (int i = 0; i < PS2INPUTBYTES; i++)
+    {
+        if (readBytes[i] == 0x31)
+        {
+            memset(pipes, 0, sizeof(pipes));
+            delayX = 0;
+            num_of_pipe = 1;
+            currentScore = 0;
+            speed = 3;
+            GameStarted = true;
+            pipes[0] = random_init();
+        }
+    }
+}
+
+void startGame(unsigned char readBytes[])
+{
+    for (int i = 0; i < PS2INPUTBYTES; i++)
+    {
+        if (readBytes[i] == 0x29)
+        {
+            GameStarted == true;
+        }
+    }
+}
+
 // Gets the 3 most recent bytes of keyboard input and stores them at the addresses of the
 // parameters. The most recent input is stored in the address pointed to by readByte1.
 void mostRecentKeyboardInputs(volatile int *ps2_ctrl_ptr, unsigned char readBytes[])
@@ -48193,6 +48288,17 @@ void mostRecentKeyboardInputs(volatile int *ps2_ctrl_ptr, unsigned char readByte
     }
 
     return;
+}
+
+void clear_all_text()
+{
+    for (int x = 0; x < 80; x++)
+    {
+        for (int y = 0; y < 60; y++)
+        {
+            draw_char(x, y, ' ');
+        }
+    }
 }
 
 // // The dirction the cursor is moving is updated by the arrow keys.
