@@ -48052,19 +48052,34 @@ void clear_screen();
 void wait_for_vsync();
 
 // Muhammad Irfan //
-void draw_image();
+
+// Draw the background
+void draw_bg();
+// Draw the pipe
 void draw_pipe(pipe pipes);
+//  Random the character of the pipe
 pipe random_init();
+// !!!!
 void shiftPipesToLeft(pipe pipes[], int *num_of_pipe);
+// Increase the speed when level increasing
 int level(int totalPipe, int *speed);
+// Check if the bird hits the pipe
 void GameOver();
+// Get the score
 int score(bird flappy, int *curScore, const int num_pipe, pipe *pipes);
+// !!!
 int proto_Score(int *curScore);
+// Clear the string
 void clear_all_text();
+// Start the game
 void startGame(unsigned char readBytes[]);
+// Initialize Game when someone press N button
 void initializeGame(unsigned char readBytes[]);
+// Display the score in the screen and hex
 void displayScore();
+// Get the highest score
 void displayHighScore(unsigned char readBytes[]);
+// Pause the game
 void pauseGame(unsigned char readBytes[]);
 
 /// Muhammad Abdullah ///
@@ -48108,7 +48123,7 @@ int main(void)
     pixel_buffer_start = *pixel_ctrl_ptr;
     clear_screen(); // pixel_buffer_start points to the pixel buffer
 
-    // draw_image();
+    // draw_bg();
 
     /* set back pixel buffer to Buffer 2 */
     *(pixel_ctrl_ptr + 1) = (int)&Buffer2;
@@ -48127,7 +48142,7 @@ int main(void)
         if (GameStarted && !GamePaused)
         {
             clear_all_text();
-            draw_image();
+            draw_bg();
             proto_Score(&currentScore);
             clear_screen();
             level(num_of_pipe, &speed);
@@ -48183,7 +48198,12 @@ void pauseGame(unsigned char readBytes[])
     {
         if (readBytes[i] == 0x4D)
         {
-            GamePaused = true;
+            if (GamePaused == false)
+            {
+                GamePaused = true;
+            } else {
+                GamePaused = false;
+            }
         }
     }
 }
@@ -48242,7 +48262,7 @@ void startGame(unsigned char readBytes[])
     {
         if (readBytes[i] == 0x29)
         {
-            GameStarted == true;
+            GameStarted = true;
         }
     }
 }
@@ -48301,58 +48321,6 @@ void clear_all_text()
     }
 }
 
-// // The dirction the cursor is moving is updated by the arrow keys.
-// void updateCursorMovementDirection(Cursor *screenCursorPtr, unsigned char readBytes[])
-// {
-//     // The array of keyboard input is examined in overlapping three-byte packets.
-//     // The location of these packets in the array is kept track of with the index i.
-//     // 3 byte overlapping sequences are considered from the highest index of the
-//     // input array to the lowest (from the oldest input to the most recent).
-//     for (int i = PS2INPUTBYTES - 1; i > 1; i--)
-//     {
-//         // First check to see if an arrow key sent the input byte.
-//         // Information from arrow keys starts with the hex value E0.
-//         if (readBytes[i] == 0xE0)
-//         {
-//             // Now, check and see if the second byte indicates a key release.
-//             // If the arrow key was released, it should have the value F0.
-//             if (readBytes[i - 1] == 0xF0)
-//             {
-//                 // Now that it is known an arrow key was released, stop movement
-//                 // according to the key that was pressed (inspect the third byte).
-//                 if (readBytes[i - 2] == 0x6B) // Left arrow key released.
-//                     screenCursorPtr->deltax = 0;
-
-//                 if (readBytes[i - 2] == 0x74) // Right arrow key released.
-//                     screenCursorPtr->deltax = 0;
-
-//                 if (readBytes[i - 2] == 0x75) // Up arrow key released.
-//                     screenCursorPtr->deltay = 0;
-
-//                 if (readBytes[i - 2] == 0x72) // Down arrow key released.
-//                     screenCursorPtr->deltay = 0;
-//             }
-
-//             // If the second byte did not indicate a release, it may indicate a press instead.
-//             // Check the value of the second byte to see which key press it represents, and
-//             // update movement accordingly.
-//             if (readBytes[i - 1] == 0x6B) // Left arrow key.
-//                 screenCursorPtr->deltax = -1;
-
-//             if (readBytes[i - 1] == 0x74) // Right arrow key.
-//                 screenCursorPtr->deltax = 1;
-
-//             if (readBytes[i - 1] == 0x75) // Up arrow key.
-//                 screenCursorPtr->deltay = -1;
-
-//             if (readBytes[i - 1] == 0x72) // Down arrow key.
-//                 screenCursorPtr->deltay = 1;
-//         }
-//     }
-
-//     return;
-// }
-
 void draw_string(int x, int y, char str[])
 {
     for (int i = 0; i < strlen(str); i++)
@@ -48367,7 +48335,7 @@ void draw_char(int x, int y, char letter)
     *(char *)(charBuffer + (y << 7) + x) = letter;
 }
 
-void draw_image()
+void draw_bg()
 {
     // for (int k = 0; k < 153600; k += 2)
     // {
