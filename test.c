@@ -60050,7 +60050,6 @@ int main()
 
     while (1)
     {
-        // countdown(30, 50, 1);
         if (delayX = 10)
         {
             currentScore++;
@@ -60059,6 +60058,7 @@ int main()
         }
         delayX++;
         draw_bg();
+        countdown(30, 50, 3);
         wait_for_vsync();                           // swap front and back buffers on VGA vertical sync
         pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
     }
