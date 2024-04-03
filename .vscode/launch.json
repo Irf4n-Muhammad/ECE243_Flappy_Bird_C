@@ -3,13 +3,22 @@
   "configurations": [
     {
       "name": "C/C++ Runner: Debug Session",
-      "type": "cppvsdbg",
+      "type": "cppdbg",
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
-      "console": "externalTerminal",
+      "externalConsole": true,
       "cwd": "c:/Users/muhfa/ece243/ECE243_Flappy_Bird_C",
-      "program": "c:/Users/muhfa/ece243/ECE243_Flappy_Bird_C/build/Debug/outDebug"
+      "program": "c:/Users/muhfa/ece243/ECE243_Flappy_Bird_C/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }
